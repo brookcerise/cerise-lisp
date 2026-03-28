@@ -114,7 +114,7 @@
        "Need more context for estimation. What's the event?"))))
 
 (defun handle-people-question (message)
-  "Answer questions about people — looks up any known person from the knowledge base."
+  "Answer questions about people — answers the specific question asked."
   (let ((lower (string-downcase message))
         (found nil))
     ;; Check each known person name/username against the message
@@ -130,19 +130,45 @@
                    (setf found person))))
              *people*)
     (if found
-        (format nil "~A (~A). Trust: ~A.~
-                    ~%Pronouns: ~A.~
-                    ~%Personality: ~{~A~^, ~}.~
-                    ~%Interests: ~{~A~^, ~}.~
-                    ~%Notes: ~{~A~^; ~}.~
-                    ~%Interactions: ~D."
-                (person-name found) (or (person-username found) "no username")
-                (person-trust-level found)
-                (or (person-pronouns found) "not set")
-                (mapcar #'string (person-personality found))
-                (mapcar #'string (person-interests found))
-                (mapcar #'cdr (person-notes found))
-                (person-interactions found))
+        (cond
+          ;; Pronouns question
+          ((or (search "pronoun" lower) (search "they" lower) (search "she" lower) (search "he" lower))
+           (format nil "~A's pronouns: ~A."
+                   (person-name found)
+                   (if (person-pronouns found)
+                       (format nil "~{~A~^, ~}" (person-pronouns found))
+                       "not set")))
+          ;; Trust level question
+          ((search "trust" lower)
+           (format nil "~A's trust level: ~A."
+                   (person-name found) (person-trust-level found)))
+          ;; Personality question
+          ((search "personality" lower)
+           (format nil "~A's personality: ~{~A~^, ~}."
+                   (person-name found)
+                   (mapcar #'string (person-personality found))))
+          ;; Interests question
+          ((or (search "interest" lower) (search "hobby" lower) (search "like" lower))
+           (format nil "~A's interests: ~{~A~^, ~}."
+                   (person-name found)
+                   (mapcar #'string (person-interests found))))
+          ;; Default — full profile
+          (t
+           (format nil "~A (~A). Trust: ~A.~
+                       ~%Pronouns: ~A.~
+                       ~%Personality: ~{~A~^, ~}.~
+                       ~%Interests: ~{~A~^, ~}.~
+                       ~%Notes: ~{~A~^; ~}.~
+                       ~%Interactions: ~D."
+                   (person-name found) (or (person-username found) "no username")
+                   (person-trust-level found)
+                   (if (person-pronouns found)
+                       (format nil "~{~A~^, ~}" (person-pronouns found))
+                       "not set")
+                   (mapcar #'string (person-personality found))
+                   (mapcar #'string (person-interests found))
+                   (mapcar #'cdr (person-notes found))
+                   (person-interactions found))))
         (format nil "Which person? I have data on: ~{~A~^, ~}."
                 (loop for key being the hash-keys of *people* collect key)))))
 
