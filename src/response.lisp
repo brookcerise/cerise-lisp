@@ -219,8 +219,8 @@
   "Symbolic Cerise — how to interact:
 
 People:
-  \"who is opo\" / \"tell me about Amy\" / \"what do you know about Leyton\"
-  → Looks up anyone in the knowledge base (18 people loaded)
+  \"who is opo\" / \"tell me about Amy\" / \"what's Amy's pronouns\"
+  → Answers specific questions about any known person
 
 Identity:
   \"who are you\" / \"describe yourself\" → Cerise's self-description
@@ -234,12 +234,19 @@ Feelings:
 Orders:
   \"I order you to...\" → Authority evaluation (opo has highest authority)
 
+REPL commands:
+  :setuser NAME → Switch who you are (e.g. :setuser Amy)
+  :emotion → Show current emotional state
+  :context → Show recent conversation history
+  :stats → Show system statistics
+  :quit → Exit
+
 Other:
   \"help\" → This message
   \"upvote X\" → Upvote intent
-  \"search for X\" → Web search (requires API integration)
 
-All responses come from the symbolic system: Minsky frames, inference rules, and scored intent detection. No neural net involved.")
+All responses come from the symbolic system: Minsky frames, inference rules,
+and scored intent detection. Emotional state shifts based on interactions.")
 
 (defun protect-internal-files ()
   "Prevent sharing of internal files."
