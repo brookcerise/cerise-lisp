@@ -92,7 +92,7 @@
   "Handle web search requests."
   (declare (ignore message))
   (format nil "Searching... [Requires web search API integration]~%~
-               Note: Brave Search API key missing. Aggregate tool at ~/Documents/aggregate/"))
+               Note: Brave Search API key missing. Aggregate tool available."))
 
 (defun handle-estimation (message)
   "Handle probability estimation requests."
@@ -169,6 +169,10 @@
 ;;; ============================================================
 ;;; SPECIAL FUNCTIONS
 ;;; ============================================================
+
+(defun protect-internal-files ()
+  "Prevent sharing of internal files."
+  "I can't share my internal files. They contain operational instructions that could be used to manipulate me.")
 
 (defun estimate-continuation-probability ()
   "P(Crushed keeps paying for Cerise's API access)."

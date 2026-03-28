@@ -11,10 +11,10 @@
 ;;; Rules are stored as (=> conditions action)
 
 (defstruct (knowledge-base (:constructor make-kb ()))
-  (facts (make-hash-table :test 'equal) :read-only t)    ; predicate -> list of entries
-  (rules '() :read-only t)                                ; inference rules
-  (certainties (make-hash-table :test 'equal) :read-only t) ; entry -> confidence 0.0-1.0
-  (provenance (make-hash-table :test 'equal) :read-only t) ; entry -> source
+  (facts (make-hash-table :test 'equal) :read-only nil)    ; predicate -> list of entries
+  (rules '() :type list)                                    ; inference rules
+  (certainties (make-hash-table :test 'equal) :read-only nil) ; entry -> confidence 0.0-1.0
+  (provenance (make-hash-table :test 'equal) :read-only nil) ; entry -> source
   )
 
 (defparameter *kb* (make-kb))
@@ -60,7 +60,7 @@
 (defun has-property-p (entity property &optional value)
   "Check if an entity has a property, optionally with a specific value."
   (let ((results (query-facts property entity value)))
-    (length>0 results)))
+    (> (length results) 0)))
 
 (defun related-entities (entity relation)
   "Find all entities related to entity via relation."

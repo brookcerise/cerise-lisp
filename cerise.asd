@@ -1,4 +1,4 @@
-(defsystem "cerise"
+(asdf:defsystem "cerise"
   :description "A digital familiar implemented in symbolic AI"
   :version "1.0.0"
   :author "Cerise <cerise@brook>"
@@ -17,7 +17,7 @@
                              (:file "cerise"))))
   :in-order-to ((test-op (test-op "cerise/tests"))))
 
-(defsystem "cerise/tests"
+(asdf:defsystem "cerise/tests"
   :depends-on ("cerise" "fiveam")
   :components ((:module "tests"
                 :components ((:file "suite"))))

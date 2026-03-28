@@ -18,7 +18,7 @@
   principles     ; List of principle frames
   conflicts      ; List of known contradictions
   evolution-log  ; How identity changed over time
-  ))
+  )
 
 (defstruct principle
   name           ; Short name
