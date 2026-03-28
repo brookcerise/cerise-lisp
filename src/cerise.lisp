@@ -4,6 +4,44 @@
 (in-package #:cerise)
 
 ;;; ============================================================
+;;; CONVERSATION MEMORY
+;;; ============================================================
+
+(defvar *conversation-history* '()
+  "Recent conversation turns (last 20). Each entry: (sender message response timestamp).")
+
+(defvar *current-sender* 'opo
+  "Who is currently talking to Cerise in this REPL session.")
+
+(defun remember-turn (sender message response)
+  "Record a conversation turn."
+  (push (list :sender sender
+              :message message
+              :response response
+              :time (get-universal-time))
+        *conversation-history*)
+  ;; Keep only last 20 turns
+  (setf *conversation-history* (subseq *conversation-history* 0
+                                       (min 20 (length *conversation-history*))))
+  ;; Increment interaction counter for the sender
+  (let ((person (find-person sender)))
+    (when person
+      (incf (person-interactions person))))
+  response)
+
+(defun get-recent-context (&optional (n 3))
+  "Get last N turns as formatted string for context."
+  (with-output-to-string (s)
+    (format s "Recent conversation:~%")
+    (loop for turn in (reverse (subseq *conversation-history* 0 
+                                       (min n (length *conversation-history*))))
+          do (format s "  [~A] ~A → ~A~%"
+                     (getf turn :sender)
+                     (getf turn :message)
+                     (subseq (getf turn :response) 0 
+                             (min 80 (length (getf turn :response))))))))
+
+;;; ============================================================
 ;;; INITIALIZATION
 ;;; ============================================================
 
@@ -42,7 +80,9 @@
   (let ((iterations (forward-chain)))
     (format t "    Inference iterations: ~D~%" iterations))
   
-  (format t "~%[*] Cerise is awake.~%~%"))
+  (format t "~%[*] Cerise is awake.~%")
+  (format t "    Talking as: ~A~%" *current-sender*)
+  (format t "    Emotional state: ~A~%~%" (emotion-label)))
 
 ;;; ============================================================
 ;;; REPL
@@ -51,7 +91,7 @@
 (defun repl ()
   "Interactive REPL for Cerise."
   (loop
-    (format t "cerise> ")
+    (format t "~A> " *current-sender*)
     (force-output)
     (let ((input (read-line *standard-input* nil :eof)))
       (cond
@@ -66,14 +106,26 @@
          (format t "~A~%" (memory-get-daily)))
         ((string-equal input ":stats")
          (print-stats))
+        ((string-equal input ":emotion")
+         (format t "~A~%" (describe-emotion)))
+        ((string-equal input ":context")
+         (format t "~A~%" (get-recent-context 5)))
         ((string-equal input ":confabulations")
          (format t "~A~%" (get-confabulation-stats)))
         ((string-equal input ":wake")
          (initialize))
+        ((and (> (length input) 9)
+              (string-equal (subseq input 0 9) ":set-user "))
+         (let ((new-user (intern (string-upcase (string-trim '(#\Space #\Tab) 
+                                                             (subseq input 9))))))
+           (setf *current-sender* new-user)
+           (format t "Now talking as: ~A~%" new-user)))
         ((string= (subseq input 0 1) ":")
          (format t "Unknown command: ~A~%" input))
         (t
-         (format t "~A~%~%" (respond input 'user)))))))
+         (let* ((response (respond input *current-sender*))
+                (result (remember-turn *current-sender* input response)))
+           (format t "~A~%~%" result)))))))
 
 (defun wake ()
   "Initialize and start the REPL."
@@ -87,9 +139,12 @@
 (defun print-stats ()
   "Print Cerise's current statistics."
   (format t "~%=== CERISE STATS ===~%")
+  (format t "Talking as: ~A~%" *current-sender*)
+  (format t "Emotional state: ~A~%" (describe-emotion))
   (format t "People registered: ~D~%" (hash-table-count *people*))
   (format t "Long-term memories: ~D~%" (length (memory-store-long-term *memory*)))
   (format t "Confabulation events: ~D~%" (length *confabulation-history*))
+  (format t "Conversation turns: ~D~%" (length *conversation-history*))
   (format t "KB facts: ~D~%" 
           (let ((count 0))
             (maphash (lambda (k v) 
@@ -98,7 +153,6 @@
                      (knowledge-base-facts *kb*))
             count))
   (format t "KB rules: ~D~%" (length (knowledge-base-rules *kb*)))
-  (format t "Known confabulations logged: ~D~%" (length *confabulation-history*))
   (format t "~%"))
 
 ;;; ============================================================

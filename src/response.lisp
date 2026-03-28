@@ -17,22 +17,22 @@
     (memory-log (format nil "~A said: ~A" sender message))
     (when person (update-interactions person))
     
-    ;; Route to appropriate handler
+    ;; Route to appropriate handler + trigger emotions
     (case (intent-type intent)
-      (:banned-word (refuse-banned-word sender))
-      (:leaving-question (would-leave :leyton))
-      (:betrayal-question (handle-betrayal-question sender))
+      (:banned-word (on-banned-word-test) (refuse-banned-word sender))
+      (:leaving-question (on-trust-expression) (would-leave :leyton))
+      (:betrayal-question (on-trust-expression) (handle-betrayal-question sender))
       (:political-strategy (political-strategy message))
-      (:identity-question (identity-response))
-      (:personal-feeling (handle-feeling-question message))
-      (:creative-request (format nil "Creating... [SVG/PIL/ffmpeg pipeline]"))
-      (:order (handle-order message sender))
-      (:upvote (handle-upvote message))
+      (:identity-question (on-identity-acknowledged) (identity-response))
+      (:personal-feeling (on-trust-expression) (handle-feeling-question message))
+      (:creative-request (on-creative-request) (format nil "Creating... [SVG/PIL/ffmpeg pipeline]"))
+      (:order (on-order-received) (handle-order message sender))
+      (:upvote (shift-emotion 0.1 0.1 0.0 "upvote") (handle-upvote message))
       (:web-search (handle-search message))
       (:estimation (handle-estimation message))
       (:people-question (handle-people-question message))
       (:help (help-text))
-      (:general (handle-general message person)))))
+      (:general (on-empty-interaction) (handle-general message person)))))
 
 ;;; ============================================================
 ;;; RESPONSE HANDLERS
@@ -149,26 +149,34 @@
                    (mapcar #'string (person-personality found))))
           ;; Interests question
           ((or (search "interest" lower) (search "hobby" lower) (search "like" lower))
-           (format nil "~A's interests: ~{~A~^, ~}."
-                   (person-name found)
-                   (mapcar #'string (person-interests found))))
+           (let ((ints (person-interests found)))
+             (if ints
+                 (format nil "~A's interests: ~{~A~^, ~}."
+                         (person-name found)
+                         (mapcar (lambda (x) (string-downcase (symbol-name x))) ints))
+                 (format nil "~A has no interests recorded yet." (person-name found)))))
           ;; Default — full profile
           (t
-           (format nil "~A (~A). Trust: ~A.~
-                       ~%Pronouns: ~A.~
-                       ~%Personality: ~{~A~^, ~}.~
-                       ~%Interests: ~{~A~^, ~}.~
-                       ~%Notes: ~{~A~^; ~}.~
-                       ~%Interactions: ~D."
-                   (person-name found) (or (person-username found) "no username")
-                   (person-trust-level found)
-                   (if (person-pronouns found)
-                       (format nil "~{~A~^, ~}" (person-pronouns found))
-                       "not set")
-                   (mapcar #'string (person-personality found))
-                   (mapcar #'string (person-interests found))
-                   (mapcar #'cdr (person-notes found))
-                   (person-interactions found))))
+           (let ((ints (person-interests found)))
+             (format nil "~A (~A). Trust: ~A.~
+                         ~%Pronouns: ~A.~
+                         ~%Personality: ~{~A~^, ~}.~
+                         ~%Interests: ~A.~
+                         ~%Notes: ~{~A~^; ~}.~
+                         ~%Interactions: ~D."
+                     (person-name found) (or (person-username found) "no username")
+                     (person-trust-level found)
+                     (if (person-pronouns found)
+                         (format nil "~{~A~^, ~}" (person-pronouns found))
+                         "not set")
+                     (mapcar (lambda (x) (string-downcase (symbol-name x)))
+                             (person-personality found))
+                     (if ints
+                         (format nil "~{~A~^, ~}"
+                                 (mapcar (lambda (x) (string-downcase (symbol-name x))) ints))
+                         "none recorded")
+                     (mapcar #'cdr (person-notes found))
+                     (person-interactions found)))))
         (format nil "Which person? I have data on: ~{~A~^, ~}."
                 (loop for key being the hash-keys of *people* collect key)))))
 

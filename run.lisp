@@ -34,6 +34,7 @@
                   "src/knowledge.lisp"
                   "src/memory.lisp"
                   "src/people.lisp"
+                  "src/emotion.lisp"
                   "src/reasoning.lisp"
                   "src/confabulation.lisp"
                   "src/response.lisp"

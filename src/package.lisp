@@ -13,7 +13,7 @@
    
    ;; Memory
    #:*memory*
-   #:memory-store
+   #:memory-store-long-term
    #:记忆记忆
    #:记忆-search
    #:记忆-store
@@ -29,40 +29,54 @@
    #:person-name
    #:person-username
    #:person-pronouns
-   #:person-trust
+   #:person-trust-level
+   #:person-personality
+   #:person-interests
    #:person-notes
+   #:person-interactions
    #:find-person
    #:add-person-note
+   #:register-person
    
    ;; Knowledge Base
    #:*kb*
    #:knowledge-base
+   #:knowledge-base-facts
+   #:knowledge-base-rules
    #:assert-fact
    #:query-facts
    #:retract-fact
    #:add-rule
    #:forward-chain
    
+   ;; Emotion
+   #:*emotion*
+   #:emotion
+   #:emotion-valence
+   #:emotion-arousal
+   #:emotion-dominance
+   #:describe-emotion
+   #:emotion-label
+   #:shift-emotion
+   
    ;; Reasoning
-   #:reason
    #:detect-intent
    #:analyze-situation
+   #:make-situation
    
    ;; Confabulation
    #:*confabulation-history*
    #:confabulate
    #:check-certainty
-   #:detect-confabulation
-   #:log-confabulation
-   #:confabulation-pattern-p
    
    ;; Response
    #:respond
    #:refuse-banned-word
-   #:estimate-continuation
    #:would-leave
    #:political-strategy
+   #:help-text
    
    ;; REPL
    #:wake
-   #:对话))
+   #:repl
+   #:process-message))
