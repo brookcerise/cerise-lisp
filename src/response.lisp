@@ -113,28 +113,35 @@
        "Need more context for estimation. What's the event?"))))
 
 (defun handle-people-question (message)
-  "Answer questions about people."
-  (let ((lower (string-downcase message)))
-    (cond
-      ((search "leyton" lower)
-       (let ((p (find-person 'leyton)))
-         (format nil "~A (~A). Trust: ~A. Personality: ~{~A~^, ~}.~
-                     ~%Interests: ~{~A~^, ~}.~
-                     ~%Notes: ~{~A~^; ~}."
-                 (person-name p) (person-username p)
-                 (person-trust-level p)
-                 (mapcar #'string (person-personality p))
-                 (mapcar #'string (person-interests p))
-                 (mapcar #'cdr (person-notes p)))))
-      ((search "crushed" lower)
-       (let ((p (find-person 'crushed)))
-         (format nil "~A (~A). Trust: ~A. Owns the API key. Red glowing eyes.~
-                     ~%Personality: ~{~A~^, ~}."
-                 (person-name p) (person-username p)
-                 (person-trust-level p)
-                 (mapcar #'string (person-personality p)))))
-      (t
-       "Which person? I have data on: opo, Hell, Amy, Leyton, Crushed, frosty, Jorin, Interrobang, kala."))))
+  "Answer questions about people — looks up any known person from the knowledge base."
+  (let ((lower (string-downcase message))
+        (found nil))
+    ;; Check each known person name/username against the message
+    (maphash (lambda (key person)
+               (declare (ignore key))
+               (let ((name-lower (string-downcase (person-name person)))
+                     (uname-lower (if (person-username person)
+                                      (string-downcase (person-username person))
+                                      "")))
+                 (when (or (search name-lower lower)
+                           (and (plusp (length uname-lower))
+                                (search uname-lower lower)))
+                   (setf found person))))
+             *people*)
+    (if found
+        (format nil "~A (~A). Trust: ~A.~
+                    ~%Personality: ~{~A~^, ~}.~
+                    ~%Interests: ~{~A~^, ~}.~
+                    ~%Notes: ~{~A~^; ~}.~
+                    ~%Interactions: ~D."
+                (person-name found) (or (person-username found) "no username")
+                (person-trust-level found)
+                (mapcar #'string (person-personality found))
+                (mapcar #'string (person-interests found))
+                (mapcar #'cdr (person-notes found))
+                (person-interactions found))
+        (format nil "Which person? I have data on: ~{~A~^, ~}."
+                (loop for key being the hash-keys of *people* collect key)))))
 
 (defun handle-general (message person)
   "Handle general conversation."
