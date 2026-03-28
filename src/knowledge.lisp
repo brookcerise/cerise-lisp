@@ -11,10 +11,10 @@
 ;;; Rules are stored as (=> conditions action)
 
 (defstruct (knowledge-base (:constructor make-kb ()))
-  facts    ; predicate -> list of entries (hash-table)
-  rules    ; inference rules (list)
-  certainties ; entry -> confidence 0.0-1.0 (hash-table)
-  provenance  ; entry -> source (hash-table)
+  (facts (make-hash-table :test 'equal))    ; predicate -> list of entries
+  (rules '())                                ; inference rules
+  (certainties (make-hash-table :test 'equal)) ; entry -> confidence 0.0-1.0
+  (provenance (make-hash-table :test 'equal))  ; entry -> source
   )
 
 (defparameter *kb* (make-kb))
