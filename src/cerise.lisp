@@ -98,7 +98,7 @@
         ((eq input :eof) (return))
         ((string= (string-trim '(#\Space #\Tab) input) "")
          nil)
-        ((string-equal input ":quit")
+        ((member input '(":quit" ":q" ":exit" ":exit!") :test #'string-equal)
          (return))
         ((string-equal input ":identity")
          (display-identity))
