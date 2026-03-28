@@ -131,12 +131,14 @@
              *people*)
     (if found
         (format nil "~A (~A). Trust: ~A.~
+                    ~%Pronouns: ~A.~
                     ~%Personality: ~{~A~^, ~}.~
                     ~%Interests: ~{~A~^, ~}.~
                     ~%Notes: ~{~A~^; ~}.~
                     ~%Interactions: ~D."
                 (person-name found) (or (person-username found) "no username")
                 (person-trust-level found)
+                (or (person-pronouns found) "not set")
                 (mapcar #'string (person-personality found))
                 (mapcar #'string (person-interests found))
                 (mapcar #'cdr (person-notes found))
