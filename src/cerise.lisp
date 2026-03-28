@@ -114,12 +114,12 @@
          (format t "~A~%" (get-confabulation-stats)))
         ((string-equal input ":wake")
          (initialize))
-        ((and (> (length input) 9)
-              (string-equal (subseq input 0 9) ":set-user "))
-         (let ((new-user (intern (string-upcase (string-trim '(#\Space #\Tab) 
-                                                             (subseq input 9))))))
-           (setf *current-sender* new-user)
-           (format t "Now talking as: ~A~%" new-user)))
+        ;; :setuser NAME — switch current speaker identity
+        ((and (>= (length input) 10)
+              (string-equal (subseq input 0 9) ":setuser"))
+         (let ((name (string-trim '(#\Space #\Tab) (subseq input 9))))
+           (setf *current-sender* (intern (string-upcase name)))
+           (format t "Now talking as: ~A~%" *current-sender*)))
         ((string= (subseq input 0 1) ":")
          (format t "Unknown command: ~A~%" input))
         (t
