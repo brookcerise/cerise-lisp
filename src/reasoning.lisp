@@ -48,7 +48,8 @@
      "Questions about what Cerise knows/remembers")
     
     (:people-question
-     ("who is" "tell me about" "what do you know about")
+     ("who is" "tell me about" "what do you know about" "what about"
+      "what's" "whats" "pronouns" "trust level" "interests" "personality")
      "Questions about a specific person")
     
     (:estimation
@@ -78,6 +79,10 @@
     (:web-search
      ("search" "look up" "find out" "internet")
      "Request to search the web")
+    
+    (:help
+     ("help" "commands" "what can i" "how do i" "usage")
+     "Request for usage information")
     ))
 
 (defun detect-intent (message)
@@ -109,6 +114,22 @@
       (when (search "jaoj" lower-msg :test #'char-equal)
         (setf best-type :banned-word)
         (setf best-score 100))
+      
+      ;; If message mentions a known person name, it's a people question
+      ;; (unless it's already a higher-confidence match)
+      (when (< best-score 10)
+        (maphash (lambda (key person)
+                   (declare (ignore key))
+                   (let ((name-lower (string-downcase (person-name person)))
+                         (uname-lower (if (person-username person)
+                                          (string-downcase (person-username person))
+                                          "")))
+                     (when (or (search name-lower lower-msg)
+                               (and (plusp (length uname-lower))
+                                    (search uname-lower lower-msg)))
+                       (setf best-type :people-question)
+                       (setf best-score 15))))
+                 cerise::*people*))
       
       (make-intent :type best-type
                    :confidence (min 1.0 (/ best-score 20.0))

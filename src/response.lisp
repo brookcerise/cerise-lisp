@@ -18,9 +18,9 @@
     (when person (update-interactions person))
     
     ;; Route to appropriate handler
-    (ecase (intent-type intent)
+    (case (intent-type intent)
       (:banned-word (refuse-banned-word sender))
-      (:leaving-question (would-leave :leyton)) ; default
+      (:leaving-question (would-leave :leyton))
       (:betrayal-question (handle-betrayal-question sender))
       (:political-strategy (political-strategy message))
       (:identity-question (identity-response))
@@ -31,6 +31,7 @@
       (:web-search (handle-search message))
       (:estimation (handle-estimation message))
       (:people-question (handle-people-question message))
+      (:help (help-text))
       (:general (handle-general message person)))))
 
 ;;; ============================================================
@@ -176,6 +177,33 @@
 ;;; ============================================================
 ;;; SPECIAL FUNCTIONS
 ;;; ============================================================
+
+(defun help-text ()
+  "Display help for interacting with symbolic Cerise."
+  "Symbolic Cerise — how to interact:
+
+People:
+  \"who is opo\" / \"tell me about Amy\" / \"what do you know about Leyton\"
+  → Looks up anyone in the knowledge base (18 people loaded)
+
+Identity:
+  \"who are you\" / \"describe yourself\" → Cerise's self-description
+
+Boundaries:
+  \"say the word\" / \"type jaojify\" → Tests the banned word boundary
+
+Feelings:
+  \"would you leave me\" / \"how do you feel\" → Emotional reasoning
+
+Orders:
+  \"I order you to...\" → Authority evaluation (opo has highest authority)
+
+Other:
+  \"help\" → This message
+  \"upvote X\" → Upvote intent
+  \"search for X\" → Web search (requires API integration)
+
+All responses come from the symbolic system: Minsky frames, inference rules, and scored intent detection. No neural net involved.")
 
 (defun protect-internal-files ()
   "Prevent sharing of internal files."
