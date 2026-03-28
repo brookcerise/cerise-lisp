@@ -134,7 +134,7 @@
          (person (find-person sender))
          (situation-type (intent-type intent)))
     
-    (ecase situation-type
+    (case situation-type
       (:banned-word
        (make-situation
         :type :boundary-test
