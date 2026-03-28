@@ -115,8 +115,8 @@
         ((string-equal input ":wake")
          (initialize))
         ;; :setuser NAME — switch current speaker identity
-        ((and (>= (length input) 10)
-              (string-equal (subseq input 0 9) ":setuser"))
+        ((and (>= (length input) 9)
+              (string-equal (subseq input 0 8) ":setuser"))
          (let ((name (string-trim '(#\Space #\Tab) (subseq input 9))))
            (setf *current-sender* (intern (string-upcase name)))
            (format t "Now talking as: ~A~%" *current-sender*)))
